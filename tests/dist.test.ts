@@ -10,12 +10,12 @@ describe('dist build', () => {
     execSync('pnpm build', { cwd: rootDir, stdio: 'pipe' });
 
     // Run the CLI - should exit cleanly with help output
-    const result = execSync('node dist/cli.mjs --help', {
+    const result = execSync('node dist/commands-cli.mjs --help', {
       cwd: rootDir,
       stdio: 'pipe',
       encoding: 'utf-8',
     });
 
-    expect(result).toContain('skills');
+    expect(result).toContain('commandsh');
   });
 });
