@@ -8,7 +8,9 @@ export interface DiscoveredCommand {
 
 /**
  * Scan a source directory for commands in the commands/ subdirectory.
- * Returns a list of discovered command files (only *.md in the top-level commands/ dir).
+ * Supports both flat structure (commands/name.md) and namespaced structure
+ * (commands/namespace/name.md). Namespaced commands are returned with the
+ * namespace prefix (e.g., "aws/deploy").
  */
 export async function discoverCommands(basePath: string): Promise<DiscoveredCommand[]> {
   const commandsDir = join(basePath, 'commands');
@@ -24,17 +26,42 @@ export async function discoverCommands(basePath: string): Promise<DiscoveredComm
   const commands: DiscoveredCommand[] = [];
 
   for (const entry of entries) {
-    // Only process .md files at the top level of commands/
-    if (extname(entry) !== '.md') continue;
-
     const fullPath = join(commandsDir, entry);
     const entryStat = await stat(fullPath);
-    if (!entryStat.isFile()) continue;
 
-    commands.push({
-      name: basename(entry, '.md'),
-      path: fullPath,
-    });
+    // Handle flat structure: commands/*.md
+    if (entryStat.isFile() && extname(entry) === '.md') {
+      commands.push({
+        name: basename(entry, '.md'),
+        path: fullPath,
+      });
+      continue;
+    }
+
+    // Handle namespaced structure: commands/namespace/*.md
+    if (entryStat.isDirectory()) {
+      const namespaceDir = fullPath;
+      let nsEntries: string[];
+      try {
+        nsEntries = await readdir(namespaceDir);
+      } catch {
+        continue;
+      }
+
+      for (const nsEntry of nsEntries) {
+        const nsFullPath = join(namespaceDir, nsEntry);
+        // Only process .md files, skip subdirectories
+        if (!nsFullPath.endsWith('.md')) continue;
+
+        const nsEntryStat = await stat(nsFullPath);
+        if (!nsEntryStat.isFile()) continue;
+
+        commands.push({
+          name: `${entry}/${basename(nsEntry, '.md')}`,
+          path: nsFullPath,
+        });
+      }
+    }
   }
 
   // Sort by name for consistent output
