@@ -2,6 +2,7 @@ import { mkdir, copyFile, symlink, stat } from 'node:fs/promises';
 import { join, dirname, resolve, relative } from 'node:path';
 import { homedir } from 'node:os';
 import { AGENTS_DIR } from './constants.ts';
+import { agents, isUniversalAgent } from './agents.ts';
 import type { AgentType } from './types.ts';
 import type { DiscoveredCommand } from './commands-discovery.ts';
 
@@ -20,14 +21,46 @@ export interface CommandInstallResult {
 const COMMANDS_SUBDIR = 'commands';
 
 /**
- * Map of agent types to their commands directory names.
- * Only agents that support commands should be listed here.
+ * Derive the agent-specific commands directory from the skills directory.
+ * Replaces the skills-related path segment with commands.
  */
-const AGENT_COMMANDS_DIRS: Partial<Record<AgentType, string>> = {
-  'claude-code': '.claude/commands',
-  cursor: '.cursor/commands',
-  cline: '.cline/commands',
-};
+function getAgentCommandsDirPath(agentType: AgentType): string | null {
+  const config = agents[agentType];
+  if (!config) return null;
+
+  const skillsDir = config.skillsDir;
+  if (!skillsDir) return null;
+
+  // Replace skills/skills-related segments with commands
+  // Universal agents use .agents/skills → .agents/commands
+  // Agent-specific: .xxx/skills → .xxx/commands
+  return skillsDir.replace(/\/skills$/, `/${COMMANDS_SUBDIR}`).replace(/^skills$/, COMMANDS_SUBDIR);
+}
+
+/**
+ * Get all agent types that support commands.
+ * All agents with a derived commands directory are supported.
+ */
+function getAllSupportedCommandAgents(): AgentType[] {
+  return (Object.keys(agents) as AgentType[]).filter((agentType) => {
+    // Universal agent is a virtual agent, skip it for commands
+    if (agentType === 'universal') return false;
+    return !!getAgentCommandsDirPath(agentType);
+  });
+}
+
+/**
+ * Build the AGENT_COMMANDS_DIRS map dynamically from agents.ts.
+ * This ensures all agents are supported without manual configuration.
+ */
+const AGENT_COMMANDS_DIRS: Partial<Record<AgentType, string>> = {};
+for (const agentType of Object.keys(agents) as AgentType[]) {
+  if (agentType === 'universal') continue;
+  const dir = getAgentCommandsDirPath(agentType);
+  if (dir) {
+    AGENT_COMMANDS_DIRS[agentType] = dir;
+  }
+}
 
 /**
  * Sanitize a command name for safe file system use.
@@ -91,6 +124,7 @@ export function getAgentCommandsDir(
 
 /**
  * Check if an agent supports commands.
+ * All agents (except universal) are now supported.
  */
 export function agentSupportsCommands(agentType: AgentType): boolean {
   return agentType in AGENT_COMMANDS_DIRS;

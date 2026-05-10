@@ -10,10 +10,9 @@ import { discoverCommands } from './commands-discovery.ts';
 import {
   installCommandForAgent,
   isCommandInstalled,
-  agentSupportsCommands,
   type InstallMode,
 } from './commands-installer.ts';
-import { detectInstalledAgents, agents, isUniversalAgent } from './agents.ts';
+import { detectInstalledAgents, agents } from './agents.ts';
 import type { AgentType, ParsedSource } from './types.ts';
 
 export interface CommandsAddOptions {
@@ -174,27 +173,17 @@ export async function runCommandsAdd(source: string, options: CommandsAddOptions
     // Step 4: Agent selection
     let selectedAgents: AgentType[];
     if (options.agent && options.agent.includes('*')) {
-      selectedAgents = Object.keys(agents).filter((a) =>
-        agentSupportsCommands(a as AgentType)
-      ) as AgentType[];
+      selectedAgents = Object.keys(agents).filter((a) => a !== 'universal') as AgentType[];
     } else if (options.agent && options.agent.length > 0) {
-      selectedAgents = options.agent.filter((a) =>
-        agentSupportsCommands(a as AgentType)
-      ) as AgentType[];
+      selectedAgents = options.agent as AgentType[];
     } else {
-      // Detect installed agents and filter to those supporting commands
+      // Detect installed agents - show all installed agents
       const installedAgents = await detectInstalledAgents();
-      const supportedAgents = installedAgents.filter((a) => agentSupportsCommands(a));
 
-      // Always include universal agents that support commands
-      const universalSupported = Object.keys(agents)
-        .filter((a) => isUniversalAgent(a as AgentType) && agentSupportsCommands(a as AgentType))
-        .map((a) => a as AgentType);
-
-      const candidates = [...new Set([...supportedAgents, ...universalSupported])];
+      const candidates = installedAgents.length > 0 ? installedAgents : [];
 
       if (candidates.length === 0) {
-        p.log.error('No agents detected that support commands.');
+        p.log.error('No agents detected.');
         process.exit(1);
       }
 
