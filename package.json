@@ -1,7 +1,7 @@
 {
   "name": "@kkito/commandsh",
-  "version": "1.5.6",
-  "description": "The open agent skills ecosystem",
+  "version": "0.1.0",
+  "description": "The open agent commands installer",
   "type": "module",
   "bin": {
     "commandsh": "./bin/commands.mjs",
@@ -96,14 +96,6 @@
     "claude-commands",
     "cursor-commands"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vercel-labs/skills.git"
-  },
-  "homepage": "https://github.com/vercel-labs/skills#readme",
-  "bugs": {
-    "url": "https://github.com/vercel-labs/skills/issues"
-  },
   "author": "",
   "license": "MIT",
   "devDependencies": {
