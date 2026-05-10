@@ -1,6 +1,7 @@
 // src/commands-add.ts
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { homedir } from 'node:os';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { parseSource } from './source-parser.ts';
@@ -20,7 +21,6 @@ export interface CommandsAddOptions {
   agent?: string[];
   yes?: boolean;
   command?: string[];
-  list?: boolean;
   all?: boolean;
 }
 
@@ -58,8 +58,6 @@ export function parseCommandsAddOptions(args: string[]): {
       options.yes = true;
     } else if (arg === '--all' || arg === '-a') {
       options.all = true;
-    } else if (arg === '--list' || arg === '-l') {
-      options.list = true;
     } else if (arg === '--agent') {
       const next = args[++i];
       if (next) {
@@ -309,7 +307,7 @@ export async function runCommandsAdd(source: string, options: CommandsAddOptions
     // Show where commands were installed
     if (succeeded.length > 0) {
       const canonicalDir = isGlobal
-        ? join(process.env.HOME || '~', '.agents', 'commands')
+        ? join(homedir(), '.agents', 'commands')
         : join(process.cwd(), '.agents', 'commands');
       p.log.info(`Commands installed to: ${pc.cyan(canonicalDir)}`);
     }

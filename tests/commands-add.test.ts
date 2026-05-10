@@ -28,6 +28,11 @@ describe('parseCommandsAddOptions', () => {
     expect(options.all).toBe(true);
   });
 
+  it('parses --all short flag -a', () => {
+    const { options } = parseCommandsAddOptions(['my-repo', '-a']);
+    expect(options.all).toBe(true);
+  });
+
   it('parses --agent with comma-separated values', () => {
     const { options } = parseCommandsAddOptions(['my-repo', '--agent', 'claude-code,cursor']);
     expect(options.agent).toEqual(['claude-code', 'cursor']);
@@ -41,11 +46,6 @@ describe('parseCommandsAddOptions', () => {
   it('parses --command with comma-separated values', () => {
     const { options } = parseCommandsAddOptions(['my-repo', '--command', 'deploy,review']);
     expect(options.command).toEqual(['deploy', 'review']);
-  });
-
-  it('parses --list flag', () => {
-    const { options } = parseCommandsAddOptions(['my-repo', '--list']);
-    expect(options.list).toBe(true);
   });
 
   it('parses multiple flags together', () => {
