@@ -5,7 +5,9 @@
   "type": "module",
   "bin": {
     "skills": "./bin/cli.mjs",
-    "add-skill": "./bin/cli.mjs"
+    "add-skill": "./bin/cli.mjs",
+    "commandsh": "./bin/commands.mjs",
+    "add-command": "./bin/commands.mjs"
   },
   "files": [
     "dist",
@@ -90,7 +92,11 @@
     "neovate",
     "pochi",
     "adal",
-    "universal"
+    "universal",
+    "slash-commands",
+    "commands",
+    "claude-commands",
+    "cursor-commands"
   ],
   "repository": {
     "type": "git",
