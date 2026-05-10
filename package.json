@@ -1,11 +1,10 @@
 {
   "name": "@kkito/commandsh",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The open agent commands installer",
   "type": "module",
   "bin": {
-    "commandsh": "./bin/commands.mjs",
-    "add-command": "./bin/commands.mjs"
+    "commandsh": "./bin/commands.mjs"
   },
   "files": [
     "dist",
